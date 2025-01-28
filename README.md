@@ -67,7 +67,7 @@
    };
    ```
 
-## 示例
+## 截图示例
 ![1.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af248aa16.jpg)
 ![2.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af2cd610b.jpg)
 ![3.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af311cb68.jpg)
