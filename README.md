@@ -71,13 +71,5 @@
 本人不从事编程相关工作，也没怎么学习过，跟代码的关系属于他认识我但我不认识它，我的代码全部来自于AI生成。
 只能保证它能在我的环境下能跑起来，无法保证其安全和性能，更不用说规范和优雅，请大家谨慎使用和跟随。
 
-## 截图示例
+## 界面截图
 ![1.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af248aa16.jpg)
-![2.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af2cd610b.jpg)
-![3.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af311cb68.jpg)
-![4.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af33e9a04.jpg)
-![5.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af3675b55.jpg)
-![6.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af39d13f7.jpg)
-![7.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af3ca8921.jpg)
-![8.jpg](https://pic.liu-qi.cn/i/2025/01/28/6798af400cd5a.jpg)
-
