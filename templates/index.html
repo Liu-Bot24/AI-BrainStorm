@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 头脑风暴</title>
+    <!-- 添加 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 添加 Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- 添加自定义样式 -->
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        /* 添加一些基础样式 */
+        .btn {
+            @apply px-4 py-2 rounded-lg transition-colors duration-200;
+        }
+        .btn-primary {
+            @apply bg-blue-500 text-white hover:bg-blue-600 disabled:bg-blue-300;
+        }
+        .btn-outline {
+            @apply border border-gray-300 hover:bg-gray-100 disabled:bg-gray-50;
+        }
+        .model-btn {
+            @apply px-3 py-1 rounded-lg border border-gray-300 text-sm transition-colors duration-200;
+        }
+        .model-btn.selected {
+            @apply bg-blue-500 text-white border-blue-500;
+        }
+        .message {
+            margin: 1rem 0;
+            max-width: 85%;
+        }
+
+        .message.ai {
+            margin-left: 2rem;
+        }
+
+        .message .model {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #f3f4f6;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .message .content {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+            line-height: 1.5;
+        }
+
+        .message .thinking-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        /* 为不同模型设置不同的主题色 */
+        .message[data-model="glm-4-flash"] .content {
+            background-color: #f0f9ff;
+            border-color: #bae6fd;
+        }
+
+        .message[data-model="deepseek-chat"] .content {
+            background-color: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .message[data-model="4.0Ultra"] .content {
+            background-color: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .message[data-model="ep-20241224143242-hvlwz"] .content {
+            background-color: #faf5ff;
+            border-color: #e9d5ff;
+        }
+
+        .message[data-model="qwen-turbo-1101"] .content {
+            background-color: #fff7ed;
+            border-color: #fed7aa;
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #f3f4f6;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    typography: {
+                        DEFAULT: {
+                            css: {
+                                maxWidth: 'none',
+                                color: '#1f2937',
+                                p: {
+                                    marginTop: '1em',
+                                    marginBottom: '1em',
+                                },
+                                'ul > li': {
+                                    paddingLeft: '1.5em',
+                                    position: 'relative',
+                                },
+                                'ul > li::before': {
+                                    content: '""',
+                                    width: '0.5em',
+                                    height: '0.5em',
+                                    backgroundColor: '#6b7280',
+                                    borderRadius: '50%',
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: '0.5em',
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <!-- 添加 marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen py-8">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h1 class="text-2xl font-bold mb-6">AI 头脑风暴</h1>
+            
+            <div class="mb-6">
+                <input type="text" id="topic" placeholder="输入讨论主题..." 
+                       class="w-full p-2 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">讨论轮次</label>
+                        <div class="flex items-center gap-2">
+                            <button id="decreaseRounds" class="btn btn-outline px-3">-</button>
+                            <input type="number" id="rounds" value="3" min="1" max="10" 
+                                   class="w-20 text-center p-2 border rounded-lg">
+                            <button id="increaseRounds" class="btn btn-outline px-3">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-lg font-medium text-gray-700 mb-4">选择参与讨论的模型</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="modelSelection">
+                        <!-- 模型卡片将通过JS动态添加 -->
+                    </div>
+                    
+                    <div class="mt-6 bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-md font-medium text-gray-700 mb-3">发言顺序</h3>
+                        <div class="space-y-2" id="selectedModels">
+                            <!-- 已选模型顺序将在这里显示 -->
+                        </div>
+                        
+                        <div class="mt-4 text-sm text-gray-500">
+                            提示：点击上方模型卡片来添加/移除模型，可以通过多次点击调整顺序
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mb-6">
+                    <button id="startBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-2">
+                        <span class="text-lg">开始讨论</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- 讨论区域 -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div id="discussion" class="space-y-4">
+                        <!-- 讨论内容将在这里显示 -->
+                    </div>
+                </div>
+
+                <!-- 总结区域 -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-xl font-bold mb-4">讨论总结</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">选择总结模型</label>
+                            <select id="summaryModelSelection" class="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">请选择模型</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                            <input type="range" id="summaryTemperature" min="0" max="1.2" step="0.1" value="0.7"
+                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-sm text-gray-500 mt-1">当前值：<span id="summaryTempValue">0.7</span></div>
+                        </div>
+                        <button id="summaryBtn" class="w-full px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200">
+                            <span class="text-lg">生成总结</span>
+                        </button>
+                    </div>
+                    <div id="summary" class="mt-4 bg-gray-50 p-4 rounded-lg hidden">
+                        <div id="summaryContent" class="prose max-w-none"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spinner 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
+    <!-- Toastify 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- 主脚本 -->
+    <script src="/static/js/main.js"></script>
+
+    <div class="border-t border-gray-200 mt-12 py-8">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center">
+                <div class="text-blue-500 text-xl font-medium mb-4">与作者进行AI的交流</div>
+                <div class="text-gray-600 mb-3">微信公众号：liuqi-24 | 微信：liuqi-9982</div>
+                <div class="mb-4">
+                    <span class="text-gray-600">知乎主页：</span>
+                    <a href="https://www.zhihu.com/people/liuqi9982" 
+                       target="_blank" 
+                       class="text-blue-500 hover:text-blue-600 transition-colors duration-200">
+                        https://www.zhihu.com/people/liuqi9982
+                    </a>
+                </div>
+                <div class="text-gray-400 text-sm">本网站由AI生成</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
