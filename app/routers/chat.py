@@ -6,7 +6,6 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 import logging
 import asyncio
-import aiohttp
 from fastapi import FastAPI
 import httpx
 import json
